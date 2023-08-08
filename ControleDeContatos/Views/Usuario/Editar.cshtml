@@ -3,16 +3,19 @@
     
 
 @{
-    ViewData["Title"] = "Novo Usuário";
+    ViewData["Title"] = "Editar usuário";
 
 }
 
 <div class="text-center">
 
-    <h1 class="display-4">Novo Usuário</h1>
+    <h1 class="display-4">Editar Usuário</h1>
 
     <div>
-        <form asp-controller="Usuario" asp-action="Criar" method="post">
+        
+        <form asp-controller="Usuario" asp-action="Alterar" method="post">
+
+            <input type="hidden" asp-for="Id" />
             <div class="mb-3">
                 <label class="form-label">Nome</label>
                 <input type="text" asp-for="Nome" class="form-control">
@@ -42,13 +45,7 @@
 
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Senha</label>
-                <input type="password" asp-for="Senha" class="form-control">
-                @Html.ValidationMessageFor(x => x.Senha)
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block">Adicionar</button>
+            <button type="submit" class="btn btn-primary btn-block">Alterar</button>
             <a class="btn btn-secondary btn-block" asp-controller="Usuario" asp-action="Index" role="button">Voltar</a>
         </form>
     </div>
