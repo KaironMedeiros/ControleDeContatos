@@ -1,5 +1,6 @@
 ﻿using ControleDeContatos.Data;
 using ControleDeContatos.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,11 @@ namespace ControleDeContatos.Repositorio
     public class UsuarioRepositorio : IUsuarioRepositorio
     {
         private readonly BancoContext _bancoContext;
+
+        public UsuarioModel BuscarPorLogin(string login)
+        {
+            return _bancoContext.Usuarios.FirstOrDefault(x => x.Login.ToUpper() == login.ToUpper());
+        }
 
         public UsuarioRepositorio(BancoContext bancoContext)
         {
@@ -62,5 +68,7 @@ namespace ControleDeContatos.Repositorio
 
             return true;
         }
+
+
     }
 }

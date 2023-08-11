@@ -1,4 +1,6 @@
-﻿using ControleDeContatos.Models;
+﻿using ControleDeContatos.Helper;
+using ControleDeContatos.Models;
+using ControleDeContatos.Repositorio;
 using Microsoft.AspNetCore.Mvc;
 using System;
 
@@ -6,25 +8,58 @@ namespace ControleDeContatos.Controllers
 {
     public class LoginController : Controller
     {
+        private readonly IUsuarioRepositorio _usuarioRepositorio;
+        private readonly ISessao _sessao;
+
+        public LoginController(IUsuarioRepositorio usuarioRepositorio, ISessao sessao)
+        {
+            _usuarioRepositorio = usuarioRepositorio;
+            _sessao = sessao;
+        }
+
         public IActionResult Index()
         {
+            if (_sessao.BuscarSessaoUsuario() != null) return RedirectToAction("Index", "Home");
             return View();
+        }
+
+        public IActionResult Sair()
+        {
+            _sessao.RemoverSessaoUsuario();
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
         public IActionResult Entrar(LoginModel loginModel)
-        {
+            {
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
-                    return RedirectToAction("Index", "Home");
+                    UsuarioModel usuario = _usuarioRepositorio.BuscarPorLogin(loginModel.Login);
+
+                    if (usuario != null)
+                    {
+                        if (usuario.SenhaValida(loginModel.Senha))
+                        {
+                            _sessao.CriarSessaoUsuario(usuario);
+                            return RedirectToAction("Index", "Home");
+                        }
+
+                        TempData["MensagemErro"] = $"Senha do usuário é inválida, tente novamente.";
+                    }
+
+                    TempData["MensagemErro"] = $"Usuário e/ou senha inválido(s). Por favor, tente novamente.";
                 }
+
                 return View("Index");
+                //return RedirectToAction("Index", "Home");
+
             }
-            catch (Exception e)
+            catch (Exception erro)
             {
-                TempData["MensagemErro"] = $"Não foi possível realizar seu login, tente novamente. Erro: {e.Message}";
+                TempData["MensagemErro"] = $"Ops, não conseguimos realizar seu login, tente novamante, detalhe do erro: {erro.Message}";
                 return RedirectToAction("Index");
             }
         }
