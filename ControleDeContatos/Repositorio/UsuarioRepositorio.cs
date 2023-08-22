@@ -16,6 +16,11 @@ namespace ControleDeContatos.Repositorio
             return _bancoContext.Usuarios.FirstOrDefault(x => x.Login.ToUpper() == login.ToUpper());
         }
 
+        public UsuarioModel BuscarPorEmailELogin(string email, string login)
+        {
+            return _bancoContext.Usuarios.FirstOrDefault(x => x.Email.ToUpper() == email.ToUpper() && x.Login.ToUpper() == login.ToUpper());
+        }
+
         public UsuarioRepositorio(BancoContext bancoContext)
         {
             _bancoContext = bancoContext;
@@ -23,7 +28,7 @@ namespace ControleDeContatos.Repositorio
 
         public List<UsuarioModel> BuscarTodos()
         {
-            return _bancoContext.Usuarios.ToList();
+            return _bancoContext.Usuarios.Include(x => x.Contatos).ToList();
         }
 
         public UsuarioModel Adicionar(UsuarioModel usuario)
@@ -58,6 +63,25 @@ namespace ControleDeContatos.Repositorio
             return usuarioDb;
         }
 
+        public UsuarioModel AlterarSenha(AlterarSenhaModel alterarSenhaModel)
+        {
+            UsuarioModel usuarioDB = ListarPorId(alterarSenhaModel.Id);
+
+            if (usuarioDB == null) throw new System.Exception("Houve um erro na atualização da senha, usuário nao encontrado!");
+
+            if (!usuarioDB.SenhaValida(alterarSenhaModel.SenhaAtual)) throw new System.Exception("Senha atual não confere!");
+
+            if (usuarioDB.SenhaValida(alterarSenhaModel.NovaSenha)) throw new System.Exception("Nova senha deve ser diferente da senha atual");
+
+            usuarioDB.SetNovaSenha(alterarSenhaModel.NovaSenha);
+            usuarioDB.DataAtualizacao = DateTime.Now;
+
+            _bancoContext.Usuarios.Update(usuarioDB);
+            _bancoContext.SaveChanges();
+
+            return usuarioDB;
+        }
+
         public bool Apagar(int id)
         {
             UsuarioModel usuarioDb = ListarPorId(id); 
@@ -70,6 +94,6 @@ namespace ControleDeContatos.Repositorio
             return true;
         }
 
-
+ 
     }
 }
